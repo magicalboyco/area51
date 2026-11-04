@@ -79,3 +79,11 @@ Attribution and rulebook differences are not automatically repaired by these dat
 - Added `salvageExchange` to `engine/rules.js`, with tests confirming exact selected card swaps, conservation, and rejection of invalid exchanges.
 - Salvage is **not yet wired to a human choice screen**; the playable prototype still recycles captured cards without offering an exchange.
 - GitHub Actions tests for these modules passed as of this milestone. Full match browser testing, collision timing against physical play, and all 35 illustrated circuit validations remain outstanding.
+
+## Solo Salvage Bonus UI (November 4, 2026)
+
+The browser prototype now pauses after a **human-controlled** surviving alien captures a rival in a 3–8-player game. A Salvage Bonus dialog allows the player to exchange one of their remaining circuit cards for one of the captured alien's cards, repeat with other unused card slots, or skip. Only after completing the dialog are captured cards recycled and group downloads performed.
+
+Computer-controlled pilots currently **skip optional salvage exchanges**. This behavior is temporary and not a claim of faithful computer strategy. The single-file UI still uses unverified card routes and placeholder route drawings, and **mobile-device testing is not complete**.
+
+Added `tests/browser-markup.test.js` to check script syntax, required dialog elements, script dependency ordering, and salvage sequencing. GitHub Actions tests passed for this milestone, but static checks alone do not guarantee browser behavior.
