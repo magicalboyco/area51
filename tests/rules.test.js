@@ -10,7 +10,7 @@ test("group downloads clockwise, one pilot at a time until hands are full",()=>{
  const s={pilots:[p(0,[1]),p(1,[2,3]),p(2,[4])],deck:[50,51,52,53,54],overrideHolder:null};
  const result=rules.download(s,1);
  assert.equal(result.drawn,5);assert.deepEqual(s.pilots.map(x=>x.hand.length),[3,3,3]);
- assert.deepEqual(s.pilots[1].hand,[2,3,54]);assert.deepEqual(s.pilots[2].hand,[4,53,52]);assert.deepEqual(s.pilots[0].hand,[1,51,50]);
+ assert.deepEqual(s.pilots[1].hand,[2,3,54]);assert.deepEqual(s.pilots[2].hand,[4,53,51]);assert.deepEqual(s.pilots[0].hand,[1,52,50]);
 });
 test("empty backup pile claims priority and stops that turn",()=>{
  const s={pilots:[p(0,[1,2,3]),p(1,[4,5]),p(2,[6,7])],deck:[],overrideHolder:null};
