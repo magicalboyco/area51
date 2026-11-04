@@ -61,7 +61,7 @@ function choices(p){if(!target(p))return[];let a=[];for(let i=0;i<p.hand.length;
 function finish(){const alive=game.pilots.filter(x=>x.alive);if(alive.length<2||game.grid.flat().filter(Boolean).length>=35||alive.every(x=>!target(x))){game.done=true;game.phase='done';log(alive.length===1?alive[0].name+' wins!':'Round complete — tie / no legal spaces.');return true}return false}
 function commit(i,r){if(!game||game.done||game.phase!=='play')return;const p=current(),t=target(p);if(!t||i<0||i>=p.hand.length)return;const opts=choices(p),selection=opts.find(o=>o.i===i&&o.r===r);if(!selection)return;if(!selection.safe&&opts.some(o=>o.safe)){if(p.id===0)log('Choose a survivable path if one exists.');draw();return}
 const id=p.hand.splice(i,1)[0];game.grid[t.r][t.c]={id,rot:r};resolve(game.grid,game.pilots);
-const eliminated=game.pilots.filter(x=>!x.alive&&x.hand.length).map(x=>x.id);
+const eliminated=game.pilots.filter(x=>!x.alive&&(x.hand.length||game.overrideHolder===x.id)).map(x=>x.id);
 if(eliminated.length){Area51Rules.recycleCaptured(game,eliminated,shuffle);for(const id of eliminated)log(game.pilots[id].name+' eliminated.')}
 const download=Area51Rules.download(game,p.id);
 if(download.priorityHolder!==null&&download.exhausted)log(game.pilots[download.priorityHolder].name+' holds Priority Override');
@@ -75,7 +75,7 @@ if(game.phase==='launch'){for(const a of perimeter()){const v=pos(a),dot=documen
 $('phase').textContent=game.done?'RESULTS':game.phase==='launch'?'CHOOSE LAUNCH':active?'YOUR TURN':'PILOT '+game.turn+' TURN';
 $('status').textContent=game.done?'Round finished. Start a new game to play again.':game.phase==='launch'?'Tap a golden dot on the board to launch.':active?'Choose a circuit, rotate it, and install it.':current().name+' is choosing a route…';
 $('roster').innerHTML=game.pilots.map(x=>'<span class="person '+(x.alive?'':'out')+'" style="--ship:'+colors[x.id]+'">'+x.name+' · '+(x.alive?x.hand.length+' cards':'OUT')+'</span>').join('');
-$('count').textContent=game.deck.length+' circuits in draw pile';
+$('count').textContent=game.deck.length+' circuits in draw pile'+(game.overrideHolder!==null?' · Priority Override: '+game.pilots[game.overrideHolder].name:'');
 $('hand').replaceChildren();p.hand.forEach((id,i)=>{const card=document.createElement('button');card.className='card'+(selected===i?' picked':'');card.disabled=!active;card.innerHTML=routeSvg({id,rot:i===selected?rotation:0});card.onclick=()=>{selected=i;rotation=0;draw()};$('hand').append(card)});
 for(const n of ['left','right','place'])$(n).disabled=!active||!p.hand.length;
 }
