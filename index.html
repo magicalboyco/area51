@@ -55,7 +55,7 @@ function start(){const n=+$('players').value;game={grid:Array.from({length:6},()
 function launch(p){if(!game||game.phase!=='launch')return;game.pilots[0].at=p;const used=new Set([p.r+','+p.c+','+p.p]);const options=shuffle(perimeter()).filter(x=>!(x.r===p.r&&x.c===p.c));for(let i=1;i<game.pilots.length;i++){let v=options.shift();game.pilots[i].at=v}game.phase='play';log('All saucers launched. Your turn.');draw()}
 function current(){return game.pilots[game.turn]}
 function target(p){return p&&p.at&&inside(p.at.r,p.at.c)&&!game.grid[p.at.r][p.at.c]?p.at:null}
-function resolve(grid,pilots){const positions=new Map(),tracks=new Map();for(const player of pilots){if(!player.alive||!player.at)continue;let a={...player.at};const seen=new Set();let count=0;while(inside(a.r,a.c)&&grid[a.r][a.c]&&count++<150){const key=a.r+':'+a.c+':'+a.p;if(seen.has(key)){player.alive=false;break}seen.add(key);a=advance(a.r,a.c,exitPort(grid[a.r][a.c],a.p))}if(!inside(a.r,a.c)||count>=150)player.alive=false;player.at=a;const key=a.r+','+a.c+','+a.p;if(player.alive){if(positions.has(key)){player.alive=false;positions.get(key).alive=false}else positions.set(key,player)}}}
+function resolve(grid,pilots){return Area51Movement.moveAll(grid,pilots,(tile,entry)=>exitPort(tile,entry))}
 function simulate(p,id,rot){const grid=game.grid.map(row=>row.slice());grid[p.at.r][p.at.c]={id,rot};const pilots=game.pilots.map(x=>({...x,at:x.at&&{...x.at}}));resolve(grid,pilots);const me=pilots.find(x=>x.id===p.id);const captures=pilots.filter(x=>x.id!==p.id&&game.pilots[x.id].alive&&!x.alive).length;let liberty=0;if(me.alive&&me.at){for(const [dr,dc] of [[-1,0],[0,1],[1,0],[0,-1]]){const row=me.at.r+dr,col=me.at.c+dc;if(inside(row,col)&&!grid[row][col])liberty++}}return{safe:me.alive,captures,liberty}}
 function choices(p){if(!target(p))return[];let a=[];for(let i=0;i<p.hand.length;i++)for(let r=0;r<4;r++)a.push({i,r,...simulate(p,p.hand[i],r)});return a}
 function finish(){const alive=game.pilots.filter(x=>x.alive);if(alive.length<2||game.grid.flat().filter(Boolean).length>=35||alive.every(x=>!target(x))){game.done=true;game.phase='done';log(alive.length===1?alive[0].name+' wins!':'Round complete — tie / no legal spaces.');return true}return false}
@@ -81,4 +81,4 @@ for(const n of ['left','right','place'])$(n).disabled=!active||!p.hand.length;
 }
 $('launch').onclick=start;$('restart').onclick=()=>{$('setup').style.display='grid';seq++};
 $('left').onclick=()=>{rotation=(rotation+3)%4;draw()};$('right').onclick=()=>{rotation=(rotation+1)%4;draw()};$('place').onclick=()=>commit(selected,rotation);
-</script><script src="engine/rules.js"></script><script src="engine/bot.js"></script></html>
+</script><script src="engine/movement.js"></script><script src="engine/rules.js"></script><script src="engine/bot.js"></script></html>
