@@ -23,6 +23,9 @@ button:disabled{opacity:.45;cursor:default}button:focus-visible{outline:3px soli
 .modal{max-width:430px;width:100%;background:#113b49;border:3px solid #e79c5f;padding:25px;border-radius:22px;text-align:center}
 .modal h2{font-size:36px;color:#ffb86e}.modal select,.modal button{width:100%;margin:9px 0}
 @media(max-width:730px){main{grid-template-columns:1fr}.panel{padding:10px}.token{width:16px;height:16px;font-size:8px}.entry{width:14px;height:14px}body{padding:7px}}
+#salvage[hidden]{display:none}#salvage{position:fixed;inset:0;z-index:60;background:#081b28e9;display:grid;place-items:center;padding:12px}
+#salvage .modal{max-height:94dvh;overflow:auto}#salvage label{display:block;text-align:left;margin-top:10px;font-size:13px}
+#salvage select{display:block;width:100%;background:#e7f4ee;color:#102d37}#salvage button{min-height:44px}
 </style>
 <header><div><small>JOY HAUS · MOBILE ALPHA</small><h1>ESCAPE AREA 51</h1></div><button id="restart">New game</button></header>
 <main><div><div id="board" class="grid" aria-label="Six by six navigation board"></div><p id="notes">6×6 navigation grid · solo play against computer pilots · provisional circuit mappings</p></div>
@@ -32,6 +35,14 @@ button:disabled{opacity:.45;cursor:default}button:focus-visible{outline:3px soli
 <div class="panel"><details><summary>Flight manual</summary><p>Launch a saucer from the perimeter. Select one navigation circuit, rotate it, and install it in the empty space ahead. Saucers automatically follow installed paths. Leaving the board eliminates a saucer; last survivor wins.</p><p>Important: This is a solo prototype with provisional path mappings, not yet a fully rule-verified adaptation or online multiplayer game.</p></details></div>
 <div class="panel"><b>Flight log</b><div id="log"></div></div></aside></main>
 <div id="setup"><div class="modal"><small>JOY HAUS PRESENTS</small><h2>ESCAPE AREA 51</h2><p>Damaged navigation systems. Thirty-five circuit cards. One way out.</p><label for="players">Total escapees</label><select id="players"><option value="2">2 — You + 1 computer</option><option value="3">3 — You + 2 computers</option><option value="4" selected>4 — You + 3 computers</option><option value="5">5 — You + 4 computers</option><option value="6">6 — You + 5 computers</option><option value="7">7 — You + 6 computers</option><option value="8">8 — You + 7 computers</option></select><button class="primary" id="launch">Start game</button></div></div>
+<div id="salvage" hidden role="dialog" aria-modal="true" aria-labelledby="salvageTitle">
+<div class="modal"><small>ADVANCED ESCAPE PROTOCOL</small><h2 id="salvageTitle">Salvage Bonus</h2>
+<p id="salvageInfo"></p>
+<label for="ownCard">Give up one of your circuits</label><select id="ownCard"></select>
+<label for="capturedCard">Take a captured pilot's circuit</label><select id="capturedCard"></select>
+<p id="salvageCount" aria-live="polite"></p>
+<button class="primary" id="swapCard">Exchange selected cards</button>
+<button id="doneSalvage">Continue without more exchanges</button></div></div>
 <script>
 'use strict';
 // These 35 connections were extracted provisionally from artwork and require physical-card validation.
@@ -51,34 +62,132 @@ return '<svg viewBox="0 0 100 100" style="transform:rotate('+tile.rot*90+'deg)">
 function log(msg){logs.unshift(msg);logs=logs.slice(0,9);$('log').textContent=logs.join(' · ')}
 function perimeter(){const a=[];for(let side=0;side<4;side++)for(let n=0;n<N;n++)for(let bit=0;bit<2;bit++){if(side===0)a.push({r:0,c:n,p:bit});if(side===1)a.push({r:n,c:5,p:2+bit});if(side===2)a.push({r:5,c:n,p:4+bit});if(side===3)a.push({r:n,c:0,p:6+bit})}return a}
 function pos(p){return {x:(p.c+port[p.p][0])/6,y:(p.r+port[p.p][1])/6}}
-function start(){const n=+$('players').value;game={grid:Array.from({length:6},()=>Array(6).fill(null)),deck:shuffle(Array.from({length:35},(_,i)=>i)),pilots:Array.from({length:n},(_,id)=>({id,name:id?'Pilot '+id:'You',hand:[],alive:true,at:null})),turn:0,phase:'launch',done:false,overrideHolder:null};for(let k=0;k<3;k++)for(const p of game.pilots)if(game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;logs=[];seq++;$('setup').style.display='none';log('Choose your launch point.');draw()}
+function start(){pendingSalvage=null;$('salvage').hidden=true;const n=+$('players').value;game={grid:Array.from({length:6},()=>Array(6).fill(null)),deck:shuffle(Array.from({length:35},(_,i)=>i)),pilots:Array.from({length:n},(_,id)=>({id,name:id?'Pilot '+id:'You',hand:[],alive:true,at:null})),turn:0,phase:'launch',done:false,overrideHolder:null};for(let k=0;k<3;k++)for(const p of game.pilots)if(game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;logs=[];seq++;$('setup').style.display='none';log('Choose your launch point.');draw()}
 function launch(p){if(!game||game.phase!=='launch')return;game.pilots[0].at=p;const used=new Set([p.r+','+p.c+','+p.p]);const options=shuffle(perimeter()).filter(x=>!(x.r===p.r&&x.c===p.c));for(let i=1;i<game.pilots.length;i++){let v=options.shift();game.pilots[i].at=v}game.phase='play';log('All saucers launched. Your turn.');draw()}
 function current(){return game.pilots[game.turn]}
 function target(p){return p&&p.at&&inside(p.at.r,p.at.c)&&!game.grid[p.at.r][p.at.c]?p.at:null}
 function resolve(grid,pilots){return Area51Movement.moveAll(grid,pilots,(tile,entry)=>exitPort(tile,entry))}
 function simulate(p,id,rot){const grid=game.grid.map(row=>row.slice());grid[p.at.r][p.at.c]={id,rot};const pilots=game.pilots.map(x=>({...x,at:x.at&&{...x.at}}));resolve(grid,pilots);const me=pilots.find(x=>x.id===p.id);const captures=pilots.filter(x=>x.id!==p.id&&game.pilots[x.id].alive&&!x.alive).length;let liberty=0;if(me.alive&&me.at){for(const [dr,dc] of [[-1,0],[0,1],[1,0],[0,-1]]){const row=me.at.r+dr,col=me.at.c+dc;if(inside(row,col)&&!grid[row][col])liberty++}}return{safe:me.alive,captures,liberty}}
 function choices(p){if(!target(p))return[];let a=[];for(let i=0;i<p.hand.length;i++)for(let r=0;r<4;r++)a.push({i,r,...simulate(p,p.hand[i],r)});return a}
-function finish(){const alive=game.pilots.filter(x=>x.alive);if(alive.length<2||game.grid.flat().filter(Boolean).length>=35||alive.every(x=>!target(x))){game.done=true;game.phase='done';log(alive.length===1?alive[0].name+' wins!':'Round complete — tie / no legal spaces.');return true}return false}
-function commit(i,r){if(!game||game.done||game.phase!=='play')return;const p=current(),t=target(p);if(!t||i<0||i>=p.hand.length)return;const opts=choices(p),selection=opts.find(o=>o.i===i&&o.r===r);if(!selection)return;if(!selection.safe&&opts.some(o=>o.safe)){if(p.id===0)log('Choose a survivable path if one exists.');draw();return}
-const id=p.hand.splice(i,1)[0];game.grid[t.r][t.c]={id,rot:r};resolve(game.grid,game.pilots);
-const eliminated=game.pilots.filter(x=>!x.alive&&(x.hand.length||game.overrideHolder===x.id)).map(x=>x.id);
-if(eliminated.length){Area51Rules.recycleCaptured(game,eliminated,shuffle);for(const id of eliminated)log(game.pilots[id].name+' eliminated.')}
-const download=Area51Rules.download(game,p.id);
-if(download.priorityHolder!==null&&download.exhausted)log(game.pilots[download.priorityHolder].name+' holds Priority Override');
-selected=0;rotation=0;log(p.name+' installed circuit '+(id+1));if(finish()){draw();return}
-for(let k=1;k<=game.pilots.length;k++){const next=(game.turn+k)%game.pilots.length;if(game.pilots[next].alive){game.turn=next;break}}draw();computer()}
-function computer(){if(!game||game.done||current().id===0)return;const sequence=seq;setTimeout(()=>{if(!game||game.done||sequence!==seq)return;const p=current(),o=choices(p);if(!o.length){p.alive=false;log(p.name+' cannot move.');if(!finish()){game.turn=(game.turn+1)%game.pilots.length;while(!current().alive)game.turn=(game.turn+1)%game.pilots.length;draw();computer()}else draw();return}const choice=Area51Bot.chooseMove(o);if(choice)commit(choice.i,choice.r)},360)}
+function finish(){
+ const alive=game.pilots.filter(x=>x.alive),remaining=game.grid.flat().filter(Boolean).length;
+ if(alive.length<2||remaining>=35||alive.every(x=>!target(x))){
+  game.done=true;game.phase='done';
+  const simultaneous=game.lastSurvivors||[];
+  if(alive.length===1)log(alive[0].name+' wins!');
+  else if(!alive.length&&simultaneous.length)log('Simultaneous capture — '+simultaneous.map(id=>game.pilots[id].name).join(', ')+' tie.');
+  else log('Round complete — tie / no legal spaces.');
+  return true;
+ }
+ return false;
+}
+let pendingSalvage=null;
+function completeTurn(){
+ if(!game||game.done)return;
+ const p=current();
+ const eliminated=game.pilots.filter(x=>!x.alive&&(x.hand.length||game.overrideHolder===x.id)).map(x=>x.id);
+ if(eliminated.length){
+  const returned=Area51Rules.recycleCaptured(game,eliminated,shuffle);
+  log(eliminated.map(id=>game.pilots[id].name).join(', ')+' eliminated ('+returned+' cards recycled).');
+ }
+ const downloaded=Area51Rules.download(game,p.id);
+ if(downloaded.priorityHolder!==null&&downloaded.exhausted)
+  log(game.pilots[downloaded.priorityHolder].name+' holds Priority Override.');
+ selected=0;rotation=0;
+ if(finish()){draw();return}
+ for(let k=1;k<=game.pilots.length;k++){
+  const next=(game.turn+k)%game.pilots.length;
+  if(game.pilots[next].alive){game.turn=next;break}
+ }
+ game.phase='play';
+ draw();computer();
+}
+function closeSalvage(){
+ if(!pendingSalvage)return;
+ pendingSalvage=null;$('salvage').hidden=true;
+ completeTurn();
+}
+function showSalvage(){
+ const pending=pendingSalvage;if(!pending)return;
+ const active=game.pilots[pending.activeId],items=[];
+ for(const id of pending.captured){
+  const rival=game.pilots[id];
+  rival.hand.forEach((card,index)=>{
+   const key=id+':'+index;
+   if(!pending.usedCaptured.has(key))items.push({id,index,card});
+  });
+ }
+ const own=active.hand.map((card,index)=>({card,index})).filter(x=>!pending.usedOwn.has(x.index));
+ $('salvage').hidden=false;
+ $('salvageInfo').textContent=items.length&&own.length?'Choose one of your cards and one captured card. You can swap multiple pairs or skip.':'No more eligible cards to exchange.';
+ const a=$('ownCard'),b=$('capturedCard');
+ a.replaceChildren();b.replaceChildren();
+ for(const x of own){const opt=document.createElement('option');opt.value=x.index;opt.textContent='Your circuit '+(x.card+1);a.append(opt)}
+ for(const x of items){const opt=document.createElement('option');opt.value=x.id+':'+x.index;opt.textContent=game.pilots[x.id].name+' — circuit '+(x.card+1);b.append(opt)}
+ a.disabled=b.disabled=!own.length||!items.length;
+ $('swapCard').disabled=!own.length||!items.length;
+ $('salvageCount').textContent=pending.swapped+' card pair'+(pending.swapped===1?'':'s')+' exchanged';
+}
+function swapSalvage(){
+ const pending=pendingSalvage;if(!pending||!$('capturedCard').value)return;
+ const ownIndex=Number($('ownCard').value);
+ const [fromPilot,capturedIndex]=$('capturedCard').value.split(':').map(Number);
+ try{
+  const count=Area51Rules.salvageExchange(game,pending.activeId,[{ownIndex,fromPilot,capturedIndex}]);
+  pending.usedOwn.add(ownIndex);pending.usedCaptured.add(fromPilot+':'+capturedIndex);
+  pending.swapped+=count;log('Salvaged '+count+' navigation card.');
+  showSalvage();draw();
+ }catch(err){$('salvageInfo').textContent='Cannot exchange: '+err.message}
+}
+function commit(i,r){
+ if(!game||game.done||game.phase!=='play')return;
+ const p=current(),t=target(p);
+ if(!t||i<0||i>=p.hand.length)return;
+ const opts=choices(p),selection=opts.find(o=>o.i===i&&o.r===r);
+ if(!selection)return;
+ if(!selection.safe&&opts.some(o=>o.safe)){
+  if(p.id===0)log('Choose a survivable path if one exists.');
+  draw();return;
+ }
+ game.lastSurvivors=game.pilots.filter(x=>x.alive).map(x=>x.id);
+ const id=p.hand.splice(i,1)[0];
+ game.grid[t.r][t.c]={id,rot:r};
+ resolve(game.grid,game.pilots);
+ log(p.name+' installed circuit '+(id+1));
+ const eliminated=game.pilots.filter(x=>x.id!==p.id&&!x.alive&&x.hand.length).map(x=>x.id);
+ if(game.pilots.length>=3&&p.id===0&&p.alive&&eliminated.length){
+  pendingSalvage={activeId:p.id,captured:eliminated,usedOwn:new Set(),usedCaptured:new Set(),swapped:0};
+  game.phase='salvage';showSalvage();draw();return;
+ }
+ completeTurn();
+}
+function computer(){
+ if(!game||game.done||game.phase!=='play'||current().id===0)return;
+ const sequence=seq;
+ setTimeout(()=>{
+  if(!game||game.done||game.phase!=='play'||sequence!==seq)return;
+  const p=current(),o=choices(p);
+  if(!o.length){
+   p.alive=false;
+   log(p.name+' cannot move.');
+   completeTurn();
+   return;
+  }
+  const choice=Area51Bot.chooseMove(o);if(choice)commit(choice.i,choice.r);
+ },360);
+}
 function draw(){if(!game)return;const b=$('board');b.replaceChildren();const p=game.pilots[0],active=game.phase==='play'&&current().id===0,preview=active&&target(p);
 for(let r=0;r<6;r++)for(let c=0;c<6;c++){const d=document.createElement('div');d.className='cell'+(preview&&preview.r===r&&preview.c===c?' preview':'');let t=game.grid[r][c];if(preview&&preview.r===r&&preview.c===c&&p.hand[selected]!==undefined)t={id:p.hand[selected],rot:rotation};if(t)d.innerHTML=routeSvg(t);b.append(d)}
 for(const x of game.pilots){if(!x.alive||!x.at)continue;const v=pos(x.at),badge=document.createElement('div');badge.className='token';badge.style.cssText='left:'+(v.x*100)+'%;top:'+(v.y*100)+'%;--ship:'+colors[x.id];badge.title=x.name;badge.textContent='✦';b.append(badge)}
 if(game.phase==='launch'){for(const a of perimeter()){const v=pos(a),dot=document.createElement('button');dot.className='entry';dot.style.left=v.x*100+'%';dot.style.top=v.y*100+'%';dot.title='Launch here';dot.onclick=()=>launch({...a});b.append(dot)}}
-$('phase').textContent=game.done?'RESULTS':game.phase==='launch'?'CHOOSE LAUNCH':active?'YOUR TURN':'PILOT '+game.turn+' TURN';
-$('status').textContent=game.done?'Round finished. Start a new game to play again.':game.phase==='launch'?'Tap a golden dot on the board to launch.':active?'Choose a circuit, rotate it, and install it.':current().name+' is choosing a route…';
+$('phase').textContent=game.done?'RESULTS':game.phase==='salvage'?'SALVAGE BONUS':game.phase==='launch'?'CHOOSE LAUNCH':active?'YOUR TURN':'PILOT '+game.turn+' TURN';
+$('status').textContent=game.done?'Round finished. Start a new game to play again.':game.phase==='salvage'?'Exchange any captured cards, or continue.':game.phase==='launch'?'Tap a golden dot on the board to launch.':active?'Choose a circuit, rotate it, and install it.':current().name+' is choosing a route…';
 $('roster').innerHTML=game.pilots.map(x=>'<span class="person '+(x.alive?'':'out')+'" style="--ship:'+colors[x.id]+'">'+x.name+' · '+(x.alive?x.hand.length+' cards':'OUT')+'</span>').join('');
 $('count').textContent=game.deck.length+' circuits in draw pile'+(game.overrideHolder!==null?' · Priority Override: '+game.pilots[game.overrideHolder].name:'');
 $('hand').replaceChildren();p.hand.forEach((id,i)=>{const card=document.createElement('button');card.className='card'+(selected===i?' picked':'');card.disabled=!active;card.innerHTML=routeSvg({id,rot:i===selected?rotation:0});card.onclick=()=>{selected=i;rotation=0;draw()};$('hand').append(card)});
 for(const n of ['left','right','place'])$(n).disabled=!active||!p.hand.length;
 }
-$('launch').onclick=start;$('restart').onclick=()=>{$('setup').style.display='grid';seq++};
+$('swapCard').onclick=swapSalvage;$('doneSalvage').onclick=closeSalvage;
+$('launch').onclick=start;$('restart').onclick=()=>{pendingSalvage=null;$('salvage').hidden=true;$('setup').style.display='grid';seq++};
 $('left').onclick=()=>{rotation=(rotation+3)%4;draw()};$('right').onclick=()=>{rotation=(rotation+1)%4;draw()};$('place').onclick=()=>commit(selected,rotation);
 </script><script src="engine/movement.js"></script><script src="engine/rules.js"></script><script src="engine/bot.js"></script></html>
