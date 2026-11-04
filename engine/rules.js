@@ -32,26 +32,28 @@ function recycleCaptured(state,ids,shuffle){
 function download(state,activeIndex){
  const n=state.pilots.length;
  if(!n||activeIndex<0||activeIndex>=n)throw new Error("Invalid active pilot");
- let order;
- if(n===2){order=[activeIndex]}
- else {
-  const priority=state.overrideHolder;
-  order=cyclic(priority!==null&&priority!==undefined?priority:activeIndex,n);
-  if(priority!==null&&priority!==undefined)state.overrideHolder=null;
- }
+ const priority=state.overrideHolder;
+ const start=n>=3&&priority!==null&&priority!==undefined?priority:activeIndex;
+ if(n>=3&&priority!==null&&priority!==undefined)state.overrideHolder=null;
+ const order=n===2?[activeIndex]:cyclic(start,n);
  let drawn=0;
- for(const index of order){
-  const p=state.pilots[index];if(!isEligible(p))continue;
-  while(p.hand.length<3){
+ // A group round awards at most one card to each eligible alien, then repeats.
+ while(true){
+  let outstanding=false;
+  for(const index of order){
+   const pilot=state.pilots[index];
+   if(!isEligible(pilot))continue;
+   outstanding=true;
    if(!state.deck.length){
     if(n>=3)state.overrideHolder=index;
     return {drawn,priorityHolder:state.overrideHolder??null,exhausted:true};
    }
-   p.hand.push(state.deck.pop());drawn++;
-   if(n===2)break;
+   pilot.hand.push(state.deck.pop());drawn++;
+   if(n===2)return {drawn,priorityHolder:null,exhausted:false};
   }
+  if(!outstanding)return {drawn,priorityHolder:state.overrideHolder??null,exhausted:false};
  }
- return {drawn,priorityHolder:state.overrideHolder??null,exhausted:false};
 }
+
 return {cyclic,nextEligible,recycleCaptured,download};
 });
