@@ -1,0 +1,22 @@
+name: Navigation geometry tests
+on:
+  push:
+    paths:
+      - 'engine/**'
+      - 'tests/**'
+      - '.github/workflows/navigation-tests.yml'
+  pull_request:
+    paths:
+      - 'engine/**'
+      - 'tests/**'
+      - '.github/workflows/navigation-tests.yml'
+jobs:
+  navigation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test tile connections, rotation, and movement
+        run: node --test tests/navigation.test.js
