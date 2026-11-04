@@ -29,6 +29,28 @@ function recycleCaptured(state,ids,shuffle){
  }
  return captured.length;
 }
+function salvageExchange(state,activeId,exchanges){
+ if(state.pilots.length<3)throw new Error("Salvage is for three or more aliens");
+ const active=state.pilots.find(p=>p.id===activeId);
+ if(!active||!active.alive)throw new Error("Only an active surviving pilot may salvage");
+ if(!Array.isArray(exchanges))throw new Error("Exchange selections required");
+ const usedHand=new Set(),usedCaptured=new Set();
+ for(const ex of exchanges){
+  if(!Number.isInteger(ex.ownIndex)||ex.ownIndex<0||ex.ownIndex>=active.hand.length)throw new Error("Invalid own card index");
+  const victim=state.pilots.find(p=>p.id===ex.fromPilot);
+  if(!victim||victim.alive||ex.fromPilot===activeId)throw new Error("Salvage source must be a captured opponent");
+  if(!Number.isInteger(ex.capturedIndex)||ex.capturedIndex<0||ex.capturedIndex>=victim.hand.length)throw new Error("Invalid captured card index");
+  const ownKey=ex.ownIndex,otherKey=ex.fromPilot+":"+ex.capturedIndex;
+  if(usedHand.has(ownKey)||usedCaptured.has(otherKey))throw new Error("Card reused in salvage exchange");
+  usedHand.add(ownKey);usedCaptured.add(otherKey);
+ }
+ // Validate all choices first; then execute swaps without shifting hand indices.
+ for(const ex of exchanges){
+  const victim=state.pilots.find(p=>p.id===ex.fromPilot);
+  [active.hand[ex.ownIndex],victim.hand[ex.capturedIndex]]=[victim.hand[ex.capturedIndex],active.hand[ex.ownIndex]];
+ }
+ return exchanges.length;
+}
 function download(state,activeIndex){
  const n=state.pilots.length;
  if(!n||activeIndex<0||activeIndex>=n)throw new Error("Invalid active pilot");
@@ -55,5 +77,5 @@ function download(state,activeIndex){
  }
 }
 
-return {cyclic,nextEligible,recycleCaptured,download};
+return {cyclic,nextEligible,recycleCaptured,download,salvageExchange};
 });
