@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Escape Area 51 — Joy Haus Solo Alpha</title>
+<style>
+:root{font-family:system-ui,sans-serif;background:#102d37;color:#f7edcf}*{box-sizing:border-box}
+body{margin:0;padding:12px;background:radial-gradient(circle at top,#24606a,#102d37 75%);min-height:100dvh}
+header{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:clamp(24px,6vw,42px);color:#ffbc78;margin:8px 0;text-shadow:2px 3px #142b35}
+small{letter-spacing:.12em;color:#bde7d5}main{max-width:1100px;margin:12px auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(270px,350px);gap:16px}
+.panel{background:#0a2638d9;border:2px solid #d59258;border-radius:16px;padding:14px;margin-bottom:10px}
+button,select{font:inherit;background:#d6ebe1;color:#11313e;border:0;border-radius:10px;padding:11px;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}button:focus-visible{outline:3px solid #ffb762}
+.primary{background:#ffb86e;font-weight:800}.grid{position:relative;display:grid;grid-template-columns:repeat(6,1fr);aspect-ratio:1;background:#072c3c;border:8px solid #bb794f;border-radius:9px;overflow:visible}
+.cell{aspect-ratio:1;min-width:0;position:relative;border:1px solid #398080;background:#153f4b;display:flex;justify-content:center;align-items:center}
+.cell:nth-child(even){background:#194753}.cell.preview{outline:3px solid #ffe7a0;outline-offset:-3px}
+.cell svg,.card svg{width:100%;height:100%;display:block}.token{position:absolute;z-index:5;transform:translate(-50%,-50%);width:22px;height:22px;border:2px solid white;border-radius:50%;box-shadow:0 2px 5px #000;background:var(--ship);display:grid;place-items:center;font-size:11px;pointer-events:none}
+.entry{position:absolute;z-index:7;transform:translate(-50%,-50%);width:15px;height:15px;border:2px solid #fff;background:#ffbe67;border-radius:50%;padding:0}
+.cards{display:flex;gap:8px}.card{width:33.333%;aspect-ratio:1;border:3px solid #597f79;padding:0;overflow:hidden;background:#0c2835}
+.card.picked{border:3px solid #ffbb6c}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.status{min-height:2.5em;color:#fff0b3}.roster{display:flex;flex-wrap:wrap;gap:6px}.person{padding:6px 8px;border:1px solid var(--ship);border-radius:8px;font-size:12px}.out{text-decoration:line-through;opacity:.4}
+#notes{font-size:13px;line-height:1.5;color:#cee5dd}#log{max-height:125px;overflow:auto;font-size:12px;color:#cde3dc}
+#setup{position:fixed;inset:0;z-index:50;background:#092430ea;display:grid;place-items:center;padding:16px}
+.modal{max-width:430px;width:100%;background:#113b49;border:3px solid #e79c5f;padding:25px;border-radius:22px;text-align:center}
+.modal h2{font-size:36px;color:#ffb86e}.modal select,.modal button{width:100%;margin:9px 0}
+@media(max-width:730px){main{grid-template-columns:1fr}.panel{padding:10px}.token{width:16px;height:16px;font-size:8px}.entry{width:14px;height:14px}body{padding:7px}}
+</style>
+<header><div><small>JOY HAUS · MOBILE ALPHA</small><h1>ESCAPE AREA 51</h1></div><button id="restart">New game</button></header>
+<main><div><div id="board" class="grid" aria-label="Six by six navigation board"></div><p id="notes">6×6 navigation grid · solo play against computer pilots · provisional circuit mappings</p></div>
+<aside><div class="panel"><b id="phase">Preflight</b><p class="status" id="status">Choose a crew size to begin.</p><div class="roster" id="roster"></div><p id="count"></p></div>
+<div class="panel"><b>Your three navigation cards</b><div id="hand" class="cards"></div>
+<div class="row"><button id="left">↶ Rotate</button><button id="right">Rotate ↷</button><button class="primary" id="place">Install tile</button></div></div>
+<div class="panel"><details><summary>Flight manual</summary><p>Launch a saucer from the perimeter. Select one navigation circuit, rotate it, and install it in the empty space ahead. Saucers automatically follow installed paths. Leaving the board eliminates a saucer; last survivor wins.</p><p>Important: This is a solo prototype with provisional path mappings, not yet a fully rule-verified adaptation or online multiplayer game.</p></details></div>
+<div class="panel"><b>Flight log</b><div id="log"></div></div></aside></main>
+<div id="setup"><div class="modal"><small>JOY HAUS PRESENTS</small><h2>ESCAPE AREA 51</h2><p>Damaged navigation systems. Thirty-five circuit cards. One way out.</p><label for="players">Total escapees</label><select id="players"><option value="2">2 — You + 1 computer</option><option value="3">3 — You + 2 computers</option><option value="4" selected>4 — You + 3 computers</option><option value="5">5 — You + 4 computers</option><option value="6">6 — You + 5 computers</option><option value="7">7 — You + 6 computers</option><option value="8">8 — You + 7 computers</option></select><button class="primary" id="launch">Start game</button></div></div>
+<script>
+'use strict';
+// These 35 connections were extracted provisionally from artwork and require physical-card validation.
+const PATHS=[[1,0,3,2,5,4,7,6],[1,0,3,2,5,4,7,6],[7,2,1,6,5,4,3,0],[7,2,1,4,3,6,5,0],[4,7,3,2,0,6,5,1],[1,0,3,2,5,4,7,6],[1,0,6,7,5,4,2,3],[7,2,1,6,5,4,3,0],[1,0,6,7,5,4,2,3],[6,2,1,4,3,7,0,5],[1,0,4,7,2,6,5,3],[2,6,0,7,5,4,1,3],[7,2,1,4,3,6,5,0],[7,2,1,4,3,6,5,0],[6,2,1,4,3,7,0,5],[7,2,1,4,3,6,5,0],[5,2,1,4,3,0,7,6],[4,2,1,6,0,7,3,5],[3,2,1,0,7,6,5,4],[5,7,3,2,6,0,4,1],[7,6,3,2,5,4,1,0],[4,2,1,7,0,6,5,3],[4,3,7,1,0,6,5,2],[1,0,3,2,5,4,7,6],[6,2,1,4,3,7,0,5],[1,0,3,2,7,6,5,4],[5,4,3,2,1,0,7,6],[6,4,3,2,1,7,0,5],[3,2,1,0,7,6,5,4],[1,0,3,2,5,4,7,6],[2,6,0,7,5,4,1,3],[2,6,0,7,5,4,1,3],[2,7,0,4,3,6,5,1],[6,3,7,1,5,4,0,2],[1,0,3,2,5,4,7,6]];
+const $=id=>document.getElementById(id),N=6,colors=['#fca66d','#a2e7f0','#e0a8fa','#aff2a0','#ffc8db','#e5e08c','#c9b3ff','#9bedbb'];
+const port=[[.25,0],[.75,0],[1,.25],[1,.75],[.75,1],[.25,1],[0,.75],[0,.25]];
+const swap=[5,4,7,6,1,0,3,2];
+let game=null,selected=0,rotation=0,seq=0,logs=[];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function inside(r,c){return r>=0&&r<N&&c>=0&&c<N}
+function rotatePort(p,r){return(p+2*r)%8}
+function exitPort(t,p){return rotatePort(PATHS[t.id][(p-2*t.rot+8)%8],t.rot)}
+function advance(r,c,p){const s=Math.floor(p/2);const dr=[-1,0,1,0][s],dc=[0,1,0,-1][s];return{r:r+dr,c:c+dc,p:swap[p]}}
+function routeSvg(tile){const paths=PATHS[tile.id],pairs=[];for(let i=0;i<8;i++)if(i<paths[i])pairs.push([i,paths[i]]);
+const q=([x,y])=>[x*100,y*100],center=[50,50];let lines=pairs.map(([a,b],i)=>{const [x,y]=q(port[a]),[u,v]=q(port[b]);return '<path d="M'+x+' '+y+' Q50 50 '+u+' '+v+'" fill="none" stroke="'+(['#fdb872','#b2f4db','#c4b2fa','#f7dd8e'][i])+'" stroke-width="5" stroke-linecap="round"/>'}).join('');
+return '<svg viewBox="0 0 100 100" style="transform:rotate('+tile.rot*90+'deg)"><rect width="100" height="100" fill="#113a48"/><rect x="3" y="3" width="94" height="94" rx="8" fill="none" stroke="#64918b" stroke-width="2"/>'+lines+'</svg>'}
+function log(msg){logs.unshift(msg);logs=logs.slice(0,9);$('log').textContent=logs.join(' · ')}
+function perimeter(){const a=[];for(let side=0;side<4;side++)for(let n=0;n<N;n++)for(let bit=0;bit<2;bit++){if(side===0)a.push({r:0,c:n,p:bit});if(side===1)a.push({r:n,c:5,p:2+bit});if(side===2)a.push({r:5,c:n,p:4+bit});if(side===3)a.push({r:n,c:0,p:6+bit})}return a}
+function pos(p){return {x:(p.c+port[p.p][0])/6,y:(p.r+port[p.p][1])/6}}
+function start(){const n=+$('players').value;game={grid:Array.from({length:6},()=>Array(6).fill(null)),deck:shuffle(Array.from({length:35},(_,i)=>i)),pilots:Array.from({length:n},(_,id)=>({id,name:id?'Pilot '+id:'You',hand:[],alive:true,at:null})),turn:0,phase:'launch',done:false};for(let k=0;k<3;k++)for(const p of game.pilots)if(game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;logs=[];seq++;$('setup').style.display='none';log('Choose your launch point.');draw()}
+function launch(p){if(!game||game.phase!=='launch')return;game.pilots[0].at=p;const used=new Set([p.r+','+p.c+','+p.p]);const options=shuffle(perimeter()).filter(x=>!(x.r===p.r&&x.c===p.c));for(let i=1;i<game.pilots.length;i++){let v=options.shift();game.pilots[i].at=v}game.phase='play';log('All saucers launched. Your turn.');draw()}
+function current(){return game.pilots[game.turn]}
+function target(p){return p&&p.at&&inside(p.at.r,p.at.c)&&!game.grid[p.at.r][p.at.c]?p.at:null}
+function resolve(grid,pilots){const positions=new Map(),tracks=new Map();for(const player of pilots){if(!player.alive||!player.at)continue;let a={...player.at};const seen=new Set();let count=0;while(inside(a.r,a.c)&&grid[a.r][a.c]&&count++<150){const key=a.r+':'+a.c+':'+a.p;if(seen.has(key)){player.alive=false;break}seen.add(key);a=advance(a.r,a.c,exitPort(grid[a.r][a.c],a.p))}if(!inside(a.r,a.c)||count>=150)player.alive=false;player.at=a;const key=a.r+','+a.c+','+a.p;if(player.alive){if(positions.has(key)){player.alive=false;positions.get(key).alive=false}else positions.set(key,player)}}}
+function simulate(p,id,rot){const grid=game.grid.map(row=>row.slice());grid[p.at.r][p.at.c]={id,rot};const pilots=game.pilots.map(x=>({...x,at:x.at&&{...x.at}}));resolve(grid,pilots);return pilots.find(x=>x.id===p.id).alive}
+function choices(p){if(!target(p))return[];let a=[];for(let i=0;i<p.hand.length;i++)for(let r=0;r<4;r++)a.push({i,r,safe:simulate(p,p.hand[i],r)});return a}
+function finish(){const alive=game.pilots.filter(x=>x.alive);if(alive.length<2||game.grid.flat().filter(Boolean).length>=35||alive.every(x=>!target(x))){game.done=true;game.phase='done';log(alive.length===1?alive[0].name+' wins!':'Round complete — tie / no legal spaces.');return true}return false}
+function commit(i,r){if(!game||game.done||game.phase!=='play')return;const p=current(),t=target(p);if(!t||i<0||i>=p.hand.length)return;const opts=choices(p),selection=opts.find(o=>o.i===i&&o.r===r);if(!selection)return;if(!selection.safe&&opts.some(o=>o.safe)){if(p.id===0)log('Choose a survivable path if one exists.');draw();return}
+const id=p.hand.splice(i,1)[0];game.grid[t.r][t.c]={id,rot:r};resolve(game.grid,game.pilots);for(const x of game.pilots)if(!x.alive&&x.hand.length){game.deck.push(...x.hand.splice(0));shuffle(game.deck);log(x.name+' eliminated.')}
+if(p.alive&&p.hand.length<3&&game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;log(p.name+' installed circuit '+(id+1));if(finish()){draw();return}
+for(let k=1;k<=game.pilots.length;k++){const next=(game.turn+k)%game.pilots.length;if(game.pilots[next].alive){game.turn=next;break}}draw();computer()}
+function computer(){if(!game||game.done||current().id===0)return;const sequence=seq;setTimeout(()=>{if(!game||game.done||sequence!==seq)return;const p=current(),o=choices(p);if(!o.length){p.alive=false;log(p.name+' cannot move.');if(!finish()){game.turn=(game.turn+1)%game.pilots.length;while(!current().alive)game.turn=(game.turn+1)%game.pilots.length;draw();computer()}else draw();return}const safe=o.filter(x=>x.safe),set=safe.length?safe:o,choice=set[Math.floor(Math.random()*set.length)];commit(choice.i,choice.r)},360)}
+function draw(){if(!game)return;const b=$('board');b.replaceChildren();const p=game.pilots[0],active=game.phase==='play'&&current().id===0,preview=active&&target(p);
+for(let r=0;r<6;r++)for(let c=0;c<6;c++){const d=document.createElement('div');d.className='cell'+(preview&&preview.r===r&&preview.c===c?' preview':'');let t=game.grid[r][c];if(preview&&preview.r===r&&preview.c===c&&p.hand[selected]!==undefined)t={id:p.hand[selected],rot:rotation};if(t)d.innerHTML=routeSvg(t);b.append(d)}
+for(const x of game.pilots){if(!x.alive||!x.at)continue;const v=pos(x.at),badge=document.createElement('div');badge.className='token';badge.style.cssText='left:'+(v.x*100)+'%;top:'+(v.y*100)+'%;--ship:'+colors[x.id];badge.title=x.name;badge.textContent='✦';b.append(badge)}
+if(game.phase==='launch'){for(const a of perimeter()){const v=pos(a),dot=document.createElement('button');dot.className='entry';dot.style.left=v.x*100+'%';dot.style.top=v.y*100+'%';dot.title='Launch here';dot.onclick=()=>launch({...a});b.append(dot)}}
+$('phase').textContent=game.done?'RESULTS':game.phase==='launch'?'CHOOSE LAUNCH':active?'YOUR TURN':'PILOT '+game.turn+' TURN';
+$('status').textContent=game.done?'Round finished. Start a new game to play again.':game.phase==='launch'?'Tap a golden dot on the board to launch.':active?'Choose a circuit, rotate it, and install it.':current().name+' is choosing a route…';
+$('roster').innerHTML=game.pilots.map(x=>'<span class="person '+(x.alive?'':'out')+'" style="--ship:'+colors[x.id]+'">'+x.name+' · '+(x.alive?x.hand.length+' cards':'OUT')+'</span>').join('');
+$('count').textContent=game.deck.length+' circuits in draw pile';
+$('hand').replaceChildren();p.hand.forEach((id,i)=>{const card=document.createElement('button');card.className='card'+(selected===i?' picked':'');card.disabled=!active;card.innerHTML=routeSvg({id,rot:i===selected?rotation:0});card.onclick=()=>{selected=i;rotation=0;draw()};$('hand').append(card)});
+for(const n of ['left','right','place'])$(n).disabled=!active||!p.hand.length;
+}
+$('launch').onclick=start;$('restart').onclick=()=>{$('setup').style.display='grid';seq++};
+$('left').onclick=()=>{rotation=(rotation+3)%4;draw()};$('right').onclick=()=>{rotation=(rotation+1)%4;draw()};$('place').onclick=()=>commit(selected,rotation);
+</script></html>
