@@ -61,3 +61,13 @@ The shared `engine/rules.js` now implements and unit-tests:
 The solo HTML prototype now imports this rule module and calls it for turn replenishment and captured-hand recycling. The matching `tests/rules.test.js` passed in GitHub Actions on the committed version.
 
 Still unimplemented: optional Salvage Bonus exchange before recycling, simultaneous-path collision detection as defined by the physical rules, complete tie handling, and audited physical art/path data. Do not treat the alpha as rules-complete until these are addressed.
+
+## Tile evidence ledger (November 4, 2026)
+
+The provisional connection maps for all **35 navigation cards** are now recorded in `data/tile-audit.json`, one mapping per card. Each record includes a stable card ID, expected artwork filename, 8-endpoint reciprocal connection map, and an explicit `verified` flag.
+
+**Currently verified against artwork: 0 of 35.** These mappings were extracted earlier using a heuristic and *must not* be mistaken for proven routes. The test suite checks structural validity, numbering and reciprocity — not whether a colored printed circuit actually connects those endpoints. Real artwork checks remain necessary before gameplay can be described as faithful.
+
+The owner's tile artwork is currently available in the development inputs but **not yet uploaded as `assets/tile*.webp` into this repository**. The current web UI draws placeholder geometry. We must avoid silent fallback when completing artwork integration.
+
+Attribution and rulebook differences are not automatically repaired by these data tests. A further physical-card trace review remains the next engineering gate.
