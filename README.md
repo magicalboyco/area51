@@ -46,3 +46,18 @@ A first-generation bot decision module now lives at `engine/bot.js` and is conne
 **Difficulty modes are intentionally deferred.** The current candidate-move and capture evaluation still depends on provisional tile pairings and simplified collision / rule handling. Before adding easy/medium/hard, correct and verify the 35 card connection maps, complete the rules engine, and run real browser playtests. Bot-choice tests pass in GitHub Actions, but this does not yet prove a bug-free complete match.
 
 **Hosting:** no public play URL has been configured or verified for this private repository.
+
+
+## Physical rulebook download milestone — November 4, 2026
+
+The shared `engine/rules.js` now implements and unit-tests:
+- Two-player active-player-only replacement draw
+- Three-or-more-player clockwise group downloads (replenish to three while possible)
+- Priority Override Module assignment on an attempted empty draw
+- Priority-first group draw on the next opportunity
+- Recycling captured players' remaining hand cards to the backup pile
+- Passing an Override Module held by an eliminated pilot to the next eligible pilot
+
+The solo HTML prototype now imports this rule module and calls it for turn replenishment and captured-hand recycling. The matching `tests/rules.test.js` passed in GitHub Actions on the committed version.
+
+Still unimplemented: optional Salvage Bonus exchange before recycling, simultaneous-path collision detection as defined by the physical rules, complete tie handling, and audited physical art/path data. Do not treat the alpha as rules-complete until these are addressed.
