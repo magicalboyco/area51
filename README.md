@@ -71,3 +71,11 @@ The provisional connection maps for all **35 navigation cards** are now recorded
 The owner's tile artwork is currently available in the development inputs but **not yet uploaded as `assets/tile*.webp` into this repository**. The current web UI draws placeholder geometry. We must avoid silent fallback when completing artwork integration.
 
 Attribution and rulebook differences are not automatically repaired by these data tests. A further physical-card trace review remains the next engineering gate.
+
+## Movement and salvage engineering milestone
+
+- Added `engine/movement.js` to trace navigation routes and detect opposing traversal collisions. The solo prototype now calls this shared module from its main and bot-turn simulations.
+- Added `tests/movement.test.js` for crossing sectors, edge exits, empty-sector stopping, and opposing-path collisions.
+- Added `salvageExchange` to `engine/rules.js`, with tests confirming exact selected card swaps, conservation, and rejection of invalid exchanges.
+- Salvage is **not yet wired to a human choice screen**; the playable prototype still recycles captured cards without offering an exchange.
+- GitHub Actions tests for these modules passed as of this milestone. Full match browser testing, collision timing against physical play, and all 35 illustrated circuit validations remain outstanding.
