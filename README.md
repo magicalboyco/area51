@@ -31,3 +31,18 @@ Private rooms, real-time updates between phones, reconnection, and multiplayer s
 5. Set up a deliberate deployment and access model for playtesters.
 
 The physical-game rules and artwork remain the creative source of truth. Do not reinterpret the game rules merely to match this incomplete prototype.
+
+
+## Solo bot milestone — November 4, 2026
+
+A first-generation bot decision module now lives at `engine/bot.js` and is connected to the prototype's automated computer turns in `index.html`.
+
+- Enumerates every card currently in the bot's hand and all four orientations.
+- Uses provisional board simulation to avoid voluntary elimination whenever possible.
+- Favors moves that eliminate competitors and positions with more adjacent free sectors.
+- Breaks equally scored options randomly so repeated matches are not completely identical.
+- Has automated unit tests under `tests/bot.test.js`.
+
+**Difficulty modes are intentionally deferred.** The current candidate-move and capture evaluation still depends on provisional tile pairings and simplified collision / rule handling. Before adding easy/medium/hard, correct and verify the 35 card connection maps, complete the rules engine, and run real browser playtests. Bot-choice tests pass in GitHub Actions, but this does not yet prove a bug-free complete match.
+
+**Hosting:** no public play URL has been configured or verified for this private repository.
