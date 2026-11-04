@@ -1,0 +1,568 @@
+{
+  "schemaVersion": 1,
+  "source": "Supplied physical navigation-card artwork; mappings currently copied from provisional solo alpha.",
+  "portConvention": "0,1 top; 2,3 right; 4,5 bottom; 6,7 left, clockwise",
+  "verifiedCount": 0,
+  "cards": [
+    {
+      "id": 0,
+      "artwork": "assets/tile0.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 1,
+      "artwork": "assets/tile1.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 2,
+      "artwork": "assets/tile2.webp",
+      "verified": false,
+      "connections": [
+        7,
+        2,
+        1,
+        6,
+        5,
+        4,
+        3,
+        0
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 3,
+      "artwork": "assets/tile3.webp",
+      "verified": false,
+      "connections": [
+        7,
+        2,
+        1,
+        4,
+        3,
+        6,
+        5,
+        0
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 4,
+      "artwork": "assets/tile4.webp",
+      "verified": false,
+      "connections": [
+        4,
+        7,
+        3,
+        2,
+        0,
+        6,
+        5,
+        1
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 5,
+      "artwork": "assets/tile5.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 6,
+      "artwork": "assets/tile6.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        6,
+        7,
+        5,
+        4,
+        2,
+        3
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 7,
+      "artwork": "assets/tile7.webp",
+      "verified": false,
+      "connections": [
+        7,
+        2,
+        1,
+        6,
+        5,
+        4,
+        3,
+        0
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 8,
+      "artwork": "assets/tile8.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        6,
+        7,
+        5,
+        4,
+        2,
+        3
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 9,
+      "artwork": "assets/tile9.webp",
+      "verified": false,
+      "connections": [
+        6,
+        2,
+        1,
+        4,
+        3,
+        7,
+        0,
+        5
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 10,
+      "artwork": "assets/tile10.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        4,
+        7,
+        2,
+        6,
+        5,
+        3
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 11,
+      "artwork": "assets/tile11.webp",
+      "verified": false,
+      "connections": [
+        2,
+        6,
+        0,
+        7,
+        5,
+        4,
+        1,
+        3
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 12,
+      "artwork": "assets/tile12.webp",
+      "verified": false,
+      "connections": [
+        7,
+        2,
+        1,
+        4,
+        3,
+        6,
+        5,
+        0
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 13,
+      "artwork": "assets/tile13.webp",
+      "verified": false,
+      "connections": [
+        7,
+        2,
+        1,
+        4,
+        3,
+        6,
+        5,
+        0
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 14,
+      "artwork": "assets/tile14.webp",
+      "verified": false,
+      "connections": [
+        6,
+        2,
+        1,
+        4,
+        3,
+        7,
+        0,
+        5
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 15,
+      "artwork": "assets/tile15.webp",
+      "verified": false,
+      "connections": [
+        7,
+        2,
+        1,
+        4,
+        3,
+        6,
+        5,
+        0
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 16,
+      "artwork": "assets/tile16.webp",
+      "verified": false,
+      "connections": [
+        5,
+        2,
+        1,
+        4,
+        3,
+        0,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 17,
+      "artwork": "assets/tile17.webp",
+      "verified": false,
+      "connections": [
+        4,
+        2,
+        1,
+        6,
+        0,
+        7,
+        3,
+        5
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 18,
+      "artwork": "assets/tile18.webp",
+      "verified": false,
+      "connections": [
+        3,
+        2,
+        1,
+        0,
+        7,
+        6,
+        5,
+        4
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 19,
+      "artwork": "assets/tile19.webp",
+      "verified": false,
+      "connections": [
+        5,
+        7,
+        3,
+        2,
+        6,
+        0,
+        4,
+        1
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 20,
+      "artwork": "assets/tile20.webp",
+      "verified": false,
+      "connections": [
+        7,
+        6,
+        3,
+        2,
+        5,
+        4,
+        1,
+        0
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 21,
+      "artwork": "assets/tile21.webp",
+      "verified": false,
+      "connections": [
+        4,
+        2,
+        1,
+        7,
+        0,
+        6,
+        5,
+        3
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 22,
+      "artwork": "assets/tile22.webp",
+      "verified": false,
+      "connections": [
+        4,
+        3,
+        7,
+        1,
+        0,
+        6,
+        5,
+        2
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 23,
+      "artwork": "assets/tile23.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 24,
+      "artwork": "assets/tile24.webp",
+      "verified": false,
+      "connections": [
+        6,
+        2,
+        1,
+        4,
+        3,
+        7,
+        0,
+        5
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 25,
+      "artwork": "assets/tile25.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        3,
+        2,
+        7,
+        6,
+        5,
+        4
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 26,
+      "artwork": "assets/tile26.webp",
+      "verified": false,
+      "connections": [
+        5,
+        4,
+        3,
+        2,
+        1,
+        0,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 27,
+      "artwork": "assets/tile27.webp",
+      "verified": false,
+      "connections": [
+        6,
+        4,
+        3,
+        2,
+        1,
+        7,
+        0,
+        5
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 28,
+      "artwork": "assets/tile28.webp",
+      "verified": false,
+      "connections": [
+        3,
+        2,
+        1,
+        0,
+        7,
+        6,
+        5,
+        4
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 29,
+      "artwork": "assets/tile29.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 30,
+      "artwork": "assets/tile30.webp",
+      "verified": false,
+      "connections": [
+        2,
+        6,
+        0,
+        7,
+        5,
+        4,
+        1,
+        3
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 31,
+      "artwork": "assets/tile31.webp",
+      "verified": false,
+      "connections": [
+        2,
+        6,
+        0,
+        7,
+        5,
+        4,
+        1,
+        3
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 32,
+      "artwork": "assets/tile32.webp",
+      "verified": false,
+      "connections": [
+        2,
+        7,
+        0,
+        4,
+        3,
+        6,
+        5,
+        1
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 33,
+      "artwork": "assets/tile33.webp",
+      "verified": false,
+      "connections": [
+        6,
+        3,
+        7,
+        1,
+        5,
+        4,
+        0,
+        2
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    },
+    {
+      "id": 34,
+      "artwork": "assets/tile34.webp",
+      "verified": false,
+      "connections": [
+        1,
+        0,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6
+      ],
+      "notes": "PROVISIONAL — manually audit four printed paths and rotation against physical card before marking verified."
+    }
+  ]
+}
