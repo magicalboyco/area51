@@ -21,8 +21,10 @@ test("empty backup pile claims priority and stops that turn",()=>{
 test("override holder starts next download, then module is set aside",()=>{
  const s={pilots:[p(0,[1]),p(1,[2]),p(2,[3])],deck:[60,61,62],overrideHolder:2};
  const result=rules.download(s,0);
- assert.deepEqual(s.pilots[2].hand,[3,62,61]);
- assert.deepEqual(s.pilots[0].hand,[1]);assert.equal(result.priorityHolder,1);
+ assert.deepEqual(s.pilots[2].hand,[3,62]);
+ assert.deepEqual(s.pilots[0].hand,[1,61]);
+ assert.deepEqual(s.pilots[1].hand,[2,60]);
+ assert.equal(result.priorityHolder,2);
 });
 test("captured cards return to deck and module transfers clockwise to eligible survivor",()=>{
  const s={pilots:[p(0,[10,11],false),p(1,[20]),p(2,[30,31,32])],deck:[40],overrideHolder:0};
