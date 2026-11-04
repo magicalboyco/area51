@@ -51,7 +51,7 @@ return '<svg viewBox="0 0 100 100" style="transform:rotate('+tile.rot*90+'deg)">
 function log(msg){logs.unshift(msg);logs=logs.slice(0,9);$('log').textContent=logs.join(' · ')}
 function perimeter(){const a=[];for(let side=0;side<4;side++)for(let n=0;n<N;n++)for(let bit=0;bit<2;bit++){if(side===0)a.push({r:0,c:n,p:bit});if(side===1)a.push({r:n,c:5,p:2+bit});if(side===2)a.push({r:5,c:n,p:4+bit});if(side===3)a.push({r:n,c:0,p:6+bit})}return a}
 function pos(p){return {x:(p.c+port[p.p][0])/6,y:(p.r+port[p.p][1])/6}}
-function start(){const n=+$('players').value;game={grid:Array.from({length:6},()=>Array(6).fill(null)),deck:shuffle(Array.from({length:35},(_,i)=>i)),pilots:Array.from({length:n},(_,id)=>({id,name:id?'Pilot '+id:'You',hand:[],alive:true,at:null})),turn:0,phase:'launch',done:false};for(let k=0;k<3;k++)for(const p of game.pilots)if(game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;logs=[];seq++;$('setup').style.display='none';log('Choose your launch point.');draw()}
+function start(){const n=+$('players').value;game={grid:Array.from({length:6},()=>Array(6).fill(null)),deck:shuffle(Array.from({length:35},(_,i)=>i)),pilots:Array.from({length:n},(_,id)=>({id,name:id?'Pilot '+id:'You',hand:[],alive:true,at:null})),turn:0,phase:'launch',done:false,overrideHolder:null};for(let k=0;k<3;k++)for(const p of game.pilots)if(game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;logs=[];seq++;$('setup').style.display='none';log('Choose your launch point.');draw()}
 function launch(p){if(!game||game.phase!=='launch')return;game.pilots[0].at=p;const used=new Set([p.r+','+p.c+','+p.p]);const options=shuffle(perimeter()).filter(x=>!(x.r===p.r&&x.c===p.c));for(let i=1;i<game.pilots.length;i++){let v=options.shift();game.pilots[i].at=v}game.phase='play';log('All saucers launched. Your turn.');draw()}
 function current(){return game.pilots[game.turn]}
 function target(p){return p&&p.at&&inside(p.at.r,p.at.c)&&!game.grid[p.at.r][p.at.c]?p.at:null}
@@ -60,8 +60,12 @@ function simulate(p,id,rot){const grid=game.grid.map(row=>row.slice());grid[p.at
 function choices(p){if(!target(p))return[];let a=[];for(let i=0;i<p.hand.length;i++)for(let r=0;r<4;r++)a.push({i,r,...simulate(p,p.hand[i],r)});return a}
 function finish(){const alive=game.pilots.filter(x=>x.alive);if(alive.length<2||game.grid.flat().filter(Boolean).length>=35||alive.every(x=>!target(x))){game.done=true;game.phase='done';log(alive.length===1?alive[0].name+' wins!':'Round complete — tie / no legal spaces.');return true}return false}
 function commit(i,r){if(!game||game.done||game.phase!=='play')return;const p=current(),t=target(p);if(!t||i<0||i>=p.hand.length)return;const opts=choices(p),selection=opts.find(o=>o.i===i&&o.r===r);if(!selection)return;if(!selection.safe&&opts.some(o=>o.safe)){if(p.id===0)log('Choose a survivable path if one exists.');draw();return}
-const id=p.hand.splice(i,1)[0];game.grid[t.r][t.c]={id,rot:r};resolve(game.grid,game.pilots);for(const x of game.pilots)if(!x.alive&&x.hand.length){game.deck.push(...x.hand.splice(0));shuffle(game.deck);log(x.name+' eliminated.')}
-if(p.alive&&p.hand.length<3&&game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;log(p.name+' installed circuit '+(id+1));if(finish()){draw();return}
+const id=p.hand.splice(i,1)[0];game.grid[t.r][t.c]={id,rot:r};resolve(game.grid,game.pilots);
+const eliminated=game.pilots.filter(x=>!x.alive&&x.hand.length).map(x=>x.id);
+if(eliminated.length){Area51Rules.recycleCaptured(game,eliminated,shuffle);for(const id of eliminated)log(game.pilots[id].name+' eliminated.')}
+const download=Area51Rules.download(game,p.id);
+if(download.priorityHolder!==null&&download.exhausted)log(game.pilots[download.priorityHolder].name+' holds Priority Override');
+selected=0;rotation=0;log(p.name+' installed circuit '+(id+1));if(finish()){draw();return}
 for(let k=1;k<=game.pilots.length;k++){const next=(game.turn+k)%game.pilots.length;if(game.pilots[next].alive){game.turn=next;break}}draw();computer()}
 function computer(){if(!game||game.done||current().id===0)return;const sequence=seq;setTimeout(()=>{if(!game||game.done||sequence!==seq)return;const p=current(),o=choices(p);if(!o.length){p.alive=false;log(p.name+' cannot move.');if(!finish()){game.turn=(game.turn+1)%game.pilots.length;while(!current().alive)game.turn=(game.turn+1)%game.pilots.length;draw();computer()}else draw();return}const choice=Area51Bot.chooseMove(o);if(choice)commit(choice.i,choice.r)},360)}
 function draw(){if(!game)return;const b=$('board');b.replaceChildren();const p=game.pilots[0],active=game.phase==='play'&&current().id===0,preview=active&&target(p);
@@ -77,4 +81,4 @@ for(const n of ['left','right','place'])$(n).disabled=!active||!p.hand.length;
 }
 $('launch').onclick=start;$('restart').onclick=()=>{$('setup').style.display='grid';seq++};
 $('left').onclick=()=>{rotation=(rotation+3)%4;draw()};$('right').onclick=()=>{rotation=(rotation+1)%4;draw()};$('place').onclick=()=>commit(selected,rotation);
-</script><script src="engine/bot.js"></script></html>
+</script><script src="engine/rules.js"></script><script src="engine/bot.js"></script></html>
