@@ -34,3 +34,24 @@ test("captured pilot with no eligible successors relinquishes priority",()=>{
  const s={pilots:[p(0,[11],false),p(1,[20,21,22]),p(2,[30,31,32])],deck:[],overrideHolder:0};
  rules.recycleCaptured(s,[0]);assert.equal(s.overrideHolder,null);
 });
+
+test("salvage exchanges exactly selected physical cards before captured hands recycle",()=>{
+ const s={pilots:[p(0,[10,11,12]),p(1,[20,21],false),p(2,[30])],deck:[],overrideHolder:null};
+ assert.equal(rules.salvageExchange(s,0,[{ownIndex:0,fromPilot:1,capturedIndex:1}]),1);
+ assert.deepEqual(s.pilots[0].hand,[21,11,12]);
+ assert.deepEqual(s.pilots[1].hand,[20,10]);
+ rules.recycleCaptured(s,[1]);
+ assert.deepEqual(s.deck,[20,10]);
+});
+test("salvage is unavailable in a two-player escape",()=>{
+ const s={pilots:[p(0,[10]),p(1,[20],false)],deck:[],overrideHolder:null};
+ assert.throws(()=>rules.salvageExchange(s,0,[{ownIndex:0,fromPilot:1,capturedIndex:0}]),/three or more/);
+});
+test("invalid salvage is rejected atomically and cannot duplicate a card",()=>{
+ const s={pilots:[p(0,[10,11]),p(1,[20,21],false),p(2,[30])],deck:[],overrideHolder:null};
+ const before=JSON.stringify(s);
+ assert.throws(()=>rules.salvageExchange(s,0,[{ownIndex:0,fromPilot:1,capturedIndex:0},{ownIndex:0,fromPilot:1,capturedIndex:1}]),/reused/);
+ assert.equal(JSON.stringify(s),before);
+ assert.throws(()=>rules.salvageExchange(s,0,[{ownIndex:0,fromPilot:2,capturedIndex:0}]),/captured opponent/);
+ assert.equal(JSON.stringify(s),before);
+});
