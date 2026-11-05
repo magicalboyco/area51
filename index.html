@@ -26,6 +26,12 @@ button:disabled{opacity:.45;cursor:default}button:focus-visible{outline:3px soli
 #salvage[hidden]{display:none}#salvage{position:fixed;inset:0;z-index:60;background:#081b28e9;display:grid;place-items:center;padding:12px}
 #salvage .modal{max-height:94dvh;overflow:auto}#salvage label{display:block;text-align:left;margin-top:10px;font-size:13px}
 #salvage select{display:block;width:100%;background:#e7f4ee;color:#102d37}#salvage button{min-height:44px}
+#crewColors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0 16px}
+.crewColor{display:flex;align-items:center;justify-content:center;gap:4px;flex-direction:column;color:#fff;min-height:62px;border:2px solid #597a86;background:#173843;border-radius:12px;padding:7px 2px;font-size:12px}
+.crewColor[aria-pressed="true"]{border:3px solid #ffbb6c;background:#365263;box-shadow:0 0 0 1px #fff4bd}
+.crewColor .ufo{font-size:22px;filter:drop-shadow(0 2px 3px #000)}
+.card{position:relative}.cardLabel{position:absolute;bottom:3px;right:3px;padding:2px 5px;background:#071b27eb;color:#fff9de;border-radius:5px;font-size:11px;font-weight:900;pointer-events:none}
+#crewPicked{font-size:13px;color:#ffdda4}
 </style>
 <header><div><small>JOY HAUS · MOBILE ALPHA</small><h1>ESCAPE AREA 51</h1></div><button id="restart">New game</button></header>
 <main><div><div id="board" class="grid" aria-label="Six by six navigation board"></div><p id="notes">6×6 navigation grid · solo play against computer pilots · provisional circuit mappings</p></div>
@@ -34,7 +40,7 @@ button:disabled{opacity:.45;cursor:default}button:focus-visible{outline:3px soli
 <div class="row"><button id="left">↶ Rotate</button><button id="right">Rotate ↷</button><button class="primary" id="place">Install tile</button></div></div>
 <div class="panel"><details><summary>Flight manual</summary><p>Launch a saucer from the perimeter. Select one navigation circuit, rotate it, and install it in the empty space ahead. Saucers automatically follow installed paths. Leaving the board eliminates a saucer; last survivor wins.</p><p>Important: This is a solo prototype with provisional path mappings, not yet a fully rule-verified adaptation or online multiplayer game.</p></details></div>
 <div class="panel"><b>Flight log</b><div id="log"></div></div></aside></main>
-<div id="setup"><div class="modal"><small>JOY HAUS PRESENTS</small><h2>ESCAPE AREA 51</h2><p>Damaged navigation systems. Thirty-five circuit cards. One way out.</p><label for="players">Total escapees</label><select id="players"><option value="2">2 — You + 1 computer</option><option value="3">3 — You + 2 computers</option><option value="4" selected>4 — You + 3 computers</option><option value="5">5 — You + 4 computers</option><option value="6">6 — You + 5 computers</option><option value="7">7 — You + 6 computers</option><option value="8">8 — You + 7 computers</option></select><button class="primary" id="launch">Start game</button></div></div>
+<div id="setup"><div class="modal"><small>JOY HAUS PRESENTS</small><h2>ESCAPE AREA 51</h2><p>Damaged navigation systems. Thirty-five circuit cards. One way out.</p><label for="players">Total escapees</label><select id="players"><option value="2">2 — You + 1 computer</option><option value="3">3 — You + 2 computers</option><option value="4" selected>4 — You + 3 computers</option><option value="5">5 — You + 4 computers</option><option value="6">6 — You + 5 computers</option><option value="7">7 — You + 6 computers</option><option value="8">8 — You + 7 computers</option></select><label>Choose your alien's saucer color</label><div id="crewColors" role="group" aria-label="Choose your alien color"></div><p id="crewPicked" aria-live="polite">Your saucer: Orange</p><button class="primary" id="launch">Start game</button></div></div>
 <div id="salvage" hidden role="dialog" aria-modal="true" aria-labelledby="salvageTitle">
 <div class="modal"><small>ADVANCED ESCAPE PROTOCOL</small><h2 id="salvageTitle">Salvage Bonus</h2>
 <p id="salvageInfo"></p>
@@ -48,6 +54,11 @@ button:disabled{opacity:.45;cursor:default}button:focus-visible{outline:3px soli
 // These 35 connections were extracted provisionally from artwork and require physical-card validation.
 const PATHS=[[1,0,3,2,5,4,7,6],[1,0,3,2,5,4,7,6],[7,2,1,6,5,4,3,0],[7,2,1,4,3,6,5,0],[4,7,3,2,0,6,5,1],[1,0,3,2,5,4,7,6],[1,0,6,7,5,4,2,3],[7,2,1,6,5,4,3,0],[1,0,6,7,5,4,2,3],[6,2,1,4,3,7,0,5],[1,0,4,7,2,6,5,3],[2,6,0,7,5,4,1,3],[7,2,1,4,3,6,5,0],[7,2,1,4,3,6,5,0],[6,2,1,4,3,7,0,5],[7,2,1,4,3,6,5,0],[5,2,1,4,3,0,7,6],[4,2,1,6,0,7,3,5],[3,2,1,0,7,6,5,4],[5,7,3,2,6,0,4,1],[7,6,3,2,5,4,1,0],[4,2,1,7,0,6,5,3],[4,3,7,1,0,6,5,2],[1,0,3,2,5,4,7,6],[6,2,1,4,3,7,0,5],[1,0,3,2,7,6,5,4],[5,4,3,2,1,0,7,6],[6,4,3,2,1,7,0,5],[3,2,1,0,7,6,5,4],[1,0,3,2,5,4,7,6],[2,6,0,7,5,4,1,3],[2,6,0,7,5,4,1,3],[2,7,0,4,3,6,5,1],[6,3,7,1,5,4,0,2],[1,0,3,2,5,4,7,6]];
 const $=id=>document.getElementById(id),N=6,colors=['#fca66d','#a2e7f0','#e0a8fa','#aff2a0','#ffc8db','#e5e08c','#c9b3ff','#9bedbb'];
+const colorNames=['Orange','Blue','Purple','Green','Pink','Yellow','Lavender','Mint'];
+let chosenColor=0;
+function chooseColor(index){chosenColor=index;document.querySelectorAll('.crewColor').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===chosenColor)));$('crewPicked').textContent='Your saucer: '+colorNames[chosenColor]}
+function renderColorChoices(){const root=$('crewColors');root.replaceChildren();for(let i=0;i<8;i++){const button=document.createElement('button');button.type='button';button.className='crewColor';button.setAttribute('aria-label',colorNames[i]+' alien');button.setAttribute('aria-pressed',String(i===chosenColor));button.innerHTML='<span class="ufo" style="color:'+colors[i]+'">🛸</span><span>'+colorNames[i]+'</span>';button.onclick=()=>chooseColor(i);root.append(button)}}
+renderColorChoices();
 const port=[[.25,0],[.75,0],[1,.25],[1,.75],[.75,1],[.25,1],[0,.75],[0,.25]];
 const swap=[5,4,7,6,1,0,3,2];
 let game=null,selected=0,rotation=0,seq=0,logs=[];
@@ -62,7 +73,7 @@ return '<svg viewBox="0 0 100 100" style="transform:rotate('+tile.rot*90+'deg)">
 function log(msg){logs.unshift(msg);logs=logs.slice(0,9);$('log').textContent=logs.join(' · ')}
 function perimeter(){const a=[];for(let side=0;side<4;side++)for(let n=0;n<N;n++)for(let bit=0;bit<2;bit++){if(side===0)a.push({r:0,c:n,p:bit});if(side===1)a.push({r:n,c:5,p:2+bit});if(side===2)a.push({r:5,c:n,p:4+bit});if(side===3)a.push({r:n,c:0,p:6+bit})}return a}
 function pos(p){return {x:(p.c+port[p.p][0])/6,y:(p.r+port[p.p][1])/6}}
-function start(){pendingSalvage=null;$('salvage').hidden=true;const n=+$('players').value;game={grid:Array.from({length:6},()=>Array(6).fill(null)),deck:shuffle(Array.from({length:35},(_,i)=>i)),pilots:Array.from({length:n},(_,id)=>({id,name:id?'Pilot '+id:'You',hand:[],alive:true,at:null})),turn:0,phase:'launch',done:false,overrideHolder:null};for(let k=0;k<3;k++)for(const p of game.pilots)if(game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;logs=[];seq++;$('setup').style.display='none';log('Choose your launch point.');draw()}
+function start(){pendingSalvage=null;$('salvage').hidden=true;const n=+$('players').value;game={grid:Array.from({length:6},()=>Array(6).fill(null)),deck:shuffle(Array.from({length:35},(_,i)=>i)),pilots:Array.from({length:n},(_,id)=>({id,name:id?'Pilot '+id:'You',colorIndex:id===0?chosenColor:(chosenColor+id)%8,hand:[],alive:true,at:null})),turn:0,phase:'launch',done:false,overrideHolder:null};for(let k=0;k<3;k++)for(const p of game.pilots)if(game.deck.length)p.hand.push(game.deck.pop());selected=0;rotation=0;logs=[];seq++;$('setup').style.display='none';log('Choose your launch point.');draw()}
 function launch(p){if(!game||game.phase!=='launch')return;game.pilots[0].at=p;const used=new Set([p.r+','+p.c+','+p.p]);const options=shuffle(perimeter()).filter(x=>!(x.r===p.r&&x.c===p.c));for(let i=1;i<game.pilots.length;i++){let v=options.shift();game.pilots[i].at=v}game.phase='play';log('All saucers launched. Your turn.');draw()}
 function current(){return game.pilots[game.turn]}
 function target(p){return p&&p.at&&inside(p.at.r,p.at.c)&&!game.grid[p.at.r][p.at.c]?p.at:null}
@@ -178,13 +189,13 @@ function computer(){
 }
 function draw(){if(!game)return;const b=$('board');b.replaceChildren();const p=game.pilots[0],active=game.phase==='play'&&current().id===0,preview=active&&target(p);
 for(let r=0;r<6;r++)for(let c=0;c<6;c++){const d=document.createElement('div');d.className='cell'+(preview&&preview.r===r&&preview.c===c?' preview':'');let t=game.grid[r][c];if(preview&&preview.r===r&&preview.c===c&&p.hand[selected]!==undefined)t={id:p.hand[selected],rot:rotation};if(t)d.innerHTML=routeSvg(t);b.append(d)}
-for(const x of game.pilots){if(!x.alive||!x.at)continue;const v=pos(x.at),badge=document.createElement('div');badge.className='token';badge.style.cssText='left:'+(v.x*100)+'%;top:'+(v.y*100)+'%;--ship:'+colors[x.id];badge.title=x.name;badge.textContent='✦';b.append(badge)}
+for(const x of game.pilots){if(!x.alive||!x.at)continue;const v=pos(x.at),badge=document.createElement('div');badge.className='token';badge.style.cssText='left:'+(v.x*100)+'%;top:'+(v.y*100)+'%;--ship:'+colors[x.colorIndex];badge.title=x.name+' — '+colorNames[x.colorIndex];badge.textContent='✦';b.append(badge)}
 if(game.phase==='launch'){for(const a of perimeter()){const v=pos(a),dot=document.createElement('button');dot.className='entry';dot.style.left=v.x*100+'%';dot.style.top=v.y*100+'%';dot.title='Launch here';dot.onclick=()=>launch({...a});b.append(dot)}}
 $('phase').textContent=game.done?'RESULTS':game.phase==='salvage'?'SALVAGE BONUS':game.phase==='launch'?'CHOOSE LAUNCH':active?'YOUR TURN':'PILOT '+game.turn+' TURN';
 $('status').textContent=game.done?'Round finished. Start a new game to play again.':game.phase==='salvage'?'Exchange any captured cards, or continue.':game.phase==='launch'?'Tap a golden dot on the board to launch.':active?'Choose a circuit, rotate it, and install it.':current().name+' is choosing a route…';
-$('roster').innerHTML=game.pilots.map(x=>'<span class="person '+(x.alive?'':'out')+'" style="--ship:'+colors[x.id]+'">'+x.name+' · '+(x.alive?x.hand.length+' cards':'OUT')+'</span>').join('');
+$('roster').innerHTML=game.pilots.map(x=>'<span class="person '+(x.alive?'':'out')+'" style="--ship:'+colors[x.colorIndex]+'">'+x.name+' · '+(x.alive?x.hand.length+' cards':'OUT')+'</span>').join('');
 $('count').textContent=game.deck.length+' circuits in draw pile'+(game.overrideHolder!==null?' · Priority Override: '+game.pilots[game.overrideHolder].name:'');
-$('hand').replaceChildren();p.hand.forEach((id,i)=>{const card=document.createElement('button');card.className='card'+(selected===i?' picked':'');card.disabled=!active;card.innerHTML=routeSvg({id,rot:i===selected?rotation:0});card.onclick=()=>{selected=i;rotation=0;draw()};$('hand').append(card)});
+$('hand').replaceChildren();p.hand.forEach((id,i)=>{const card=document.createElement('button');card.className='card'+(selected===i?' picked':'');card.disabled=!active;card.innerHTML=routeSvg({id,rot:i===selected?rotation:0})+'<span class="cardLabel">#'+(id+1)+'</span>';card.title='Navigation card '+(id+1);card.setAttribute('aria-label','Navigation card '+(id+1)+(selected===i?', selected':''));card.onclick=()=>{selected=i;rotation=0;draw()};$('hand').append(card)});
 for(const n of ['left','right','place'])$(n).disabled=!active||!p.hand.length;
 }
 $('swapCard').onclick=swapSalvage;$('doneSalvage').onclick=closeSalvage;
