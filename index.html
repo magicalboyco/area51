@@ -29,7 +29,7 @@ button:disabled{opacity:.45;cursor:default}button:focus-visible{outline:3px soli
 #crewColors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0 16px}
 .crewColor{display:flex;align-items:center;justify-content:center;gap:4px;flex-direction:column;color:#fff;min-height:62px;border:2px solid #597a86;background:#173843;border-radius:12px;padding:7px 2px;font-size:12px}
 .crewColor[aria-pressed="true"]{border:3px solid #ffbb6c;background:#365263;box-shadow:0 0 0 1px #fff4bd}
-.crewColor .ufo{font-size:22px;filter:drop-shadow(0 2px 3px #000)}
+.crewColor .ufo{display:grid;place-items:center;width:33px;height:33px;border-radius:50%;background:var(--swatch);border:2px solid #fff8;box-shadow:0 2px 5px #0005;color:#102d37;font-size:19px;font-weight:900}
 .card{position:relative}.cardLabel{position:absolute;bottom:3px;right:3px;padding:2px 5px;background:#071b27eb;color:#fff9de;border-radius:5px;font-size:11px;font-weight:900;pointer-events:none}
 #crewPicked{font-size:13px;color:#ffdda4}
 </style>
@@ -57,7 +57,7 @@ const $=id=>document.getElementById(id),N=6,colors=['#fca66d','#a2e7f0','#e0a8fa
 const colorNames=['Orange','Blue','Purple','Green','Pink','Yellow','Lavender','Mint'];
 let chosenColor=0;
 function chooseColor(index){chosenColor=index;document.querySelectorAll('.crewColor').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===chosenColor)));$('crewPicked').textContent='Your saucer: '+colorNames[chosenColor]}
-function renderColorChoices(){const root=$('crewColors');root.replaceChildren();for(let i=0;i<8;i++){const button=document.createElement('button');button.type='button';button.className='crewColor';button.setAttribute('aria-label',colorNames[i]+' alien');button.setAttribute('aria-pressed',String(i===chosenColor));button.innerHTML='<span class="ufo" style="color:'+colors[i]+'">🛸</span><span>'+colorNames[i]+'</span>';button.onclick=()=>chooseColor(i);root.append(button)}}
+function renderColorChoices(){const root=$('crewColors');root.replaceChildren();for(let i=0;i<8;i++){const button=document.createElement('button');button.type='button';button.className='crewColor';button.setAttribute('aria-label',colorNames[i]+' alien');button.setAttribute('aria-pressed',String(i===chosenColor));button.innerHTML='<span class="ufo" style="--swatch:'+colors[i]+'">✦</span><span>'+colorNames[i]+'</span>';button.onclick=()=>chooseColor(i);root.append(button)}}
 renderColorChoices();
 const port=[[.25,0],[.75,0],[1,.25],[1,.75],[.75,1],[.25,1],[0,.75],[0,.25]];
 const swap=[5,4,7,6,1,0,3,2];
