@@ -4,7 +4,7 @@ A mobile-friendly browser adaptation in progress of the original physical board 
 
 ## Current build
 
-Open [index.html](./index.html) in a browser-capable HTML preview, or host the repository using a static-site host. Because this repository is **private**, it does not automatically give you a publicly accessible GitHub Pages game URL. The current source is a self-contained HTML file with no build step.
+Open [index.html](./index.html) in a browser-capable HTML preview, or host the repository using a static-site host. This repository is public and includes a GitHub Pages workflow (`.github/workflows/deploy-pages.yml`) that runs the tests and publishes the repo on every push to `main`. It needs Settings > Pages > Source set to GitHub Actions; the expected URL is https://magicalboyco.github.io/area51/ and it has not been verified live as of 2026-11-06. The current source is a self-contained HTML file with no build step.
 
 This commit provides an **early solo playtest prototype**:
 - 6 × 6 navigation grid
@@ -45,7 +45,7 @@ A first-generation bot decision module now lives at `engine/bot.js` and is conne
 
 **Difficulty modes are intentionally deferred.** The current candidate-move and capture evaluation still depends on provisional tile pairings and simplified collision / rule handling. Before adding easy/medium/hard, correct and verify the 35 card connection maps, complete the rules engine, and run real browser playtests. Bot-choice tests pass in GitHub Actions, but this does not yet prove a bug-free complete match.
 
-**Hosting:** no public play URL has been configured or verified for this private repository.
+**Hosting:** the Pages workflow is in place. A public play URL has not been verified as of 2026-11-06.
 
 
 ## Physical rulebook download milestone — November 4, 2026
